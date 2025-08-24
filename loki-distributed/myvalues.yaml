@@ -1,0 +1,14 @@
+loki:
+  commonConfig:
+    replication_factor: 3
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki-project-cluster
+    s3:
+      endpoint: https://storage.yandexcloud.net
+      region: ru-central1              
+      secretAccessKey: YCPoUiZlpk_xuX4kCJMAVYvYby2hprSR3wYiw7FQ
+      accessKeyId: YCAJE_vlt-zMV3U9qTlKzx_xI
+      s3ForcePathStyle: true                      
+      insecure: false                             
