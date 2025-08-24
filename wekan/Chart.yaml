@@ -1,0 +1,28 @@
+apiVersion: v2
+appVersion: "7.93"
+dependencies:
+  - condition: mongodb.enabled
+    name: mongodb
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.6.x
+description: Open Source kanban
+home: https://wekan.fi
+icon: https://wekan.fi/wekan-logo.svg
+keywords:
+  - kanban
+maintainers:
+  - email: support@wekan.fi
+    name: wekan
+  - email: x@xet7.org
+    name: xet7
+  - email: github@randall.cc
+    name: technotaff
+  - email: jiangyt.cn@gmail.com
+    name: jiangytcn
+  - email: varac@varac.net
+    name: varac
+name: wekan
+sources:
+  - https://github.com/wekan/wekan
+type: application
+version: 7.93.0
