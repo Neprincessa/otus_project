@@ -40,8 +40,7 @@ jobs:
     # Проверка Аутентификация в Yandex Cloud
     - name: Test YC CLI
       run: |
-        yc config get folder-id > folder_id.txt  # Сохраняем в файл
-        cat folder_id.txt  # Показываем содержимое
+        yc config get folder-id > folder_id.txt
 
     # Создание Kubernetes-кластера
     - name: Create Yandex Managed Kubernetes Cluster
@@ -71,7 +70,7 @@ jobs:
                   --disk-type network-ssd \
                   --fixed-size 1 \
                   --disk-size 64 \
-                  --network-interface subnets=default-ru-central1-a,security-group-ids=enp6hb50hhtrelck4d4e,enpbn9uhvej9arsdvh3m,enplphvjtsi96ffms38r \
+                  --network-interface subnets=default-ru-central1-a,security-group-ids=enp6ink0ponebrv6uqui \
                   --async
                   else
           echo "Node group '${{env.YC_NODE_GROUP}}' already exists, skipping creation"
@@ -83,6 +82,7 @@ jobs:
         yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
         kubectl config view --raw > kubeconfig.yaml
 
+  configure_tools:
     # Установка Helm
     - name: Install Helm
       uses: azure/setup-helm@v3
