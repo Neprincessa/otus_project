@@ -106,6 +106,7 @@ jobs:
         --set controller.service.annotations."yandex\.cloud/load-balancer-type"=external \
         --set controller.service.annotations."yandex\.cloud/subnet-id"=e9bd98gq845t7cfn2qec \
         --set controller.service.annotations."yandex\.cloud/network-id"=enpk98l23krfjo0gnenl
+      continue-on-error: true
 
     # Установка мониторинга
     - name: Deploy Loki-Stack
