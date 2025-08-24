@@ -83,6 +83,14 @@ jobs:
         kubectl config view --raw > kubeconfig.yaml
 
   configure_tools:
+    runs-on: ubuntu-latest
+
+
+
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  
     # Установка Helm
     - name: Install Helm
       uses: azure/setup-helm@v3
