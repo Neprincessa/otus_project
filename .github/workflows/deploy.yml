@@ -93,6 +93,11 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Get Kubeconfig
+      run: |
+        yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
+        kubectl config view --raw > kubeconfig.yaml
+        
     # Установка ingress
     - name: Deploy Ingress NGINX
       run: |
@@ -105,13 +110,13 @@ jobs:
         --set controller.service.annotations."yandex\.cloud/load-balancer-type"=external \
         --set controller.service.annotations."yandex\.cloud/subnet-id"=e9bd98gq845t7cfn2qec \
         --set controller.service.annotations."yandex\.cloud/network-id"=enpk98l23krfjo0gnenl
-      continue-on-error: true
+      # continue-on-error: true
 
     # Установка мониторинга Loki stack
     - name: Deploy Loki-Stack
       run: |
         helm install loki loki-distributed/ -f values/loki_values.yaml -n monitoring --create-namespace 
-      continue-on-error: true
+      # continue-on-error: true
 
     # Установка мониторинга Grafana
     - name: Deploy Grafana
@@ -119,13 +124,13 @@ jobs:
         helm install grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
         kubectl get secret --namespace logging loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
         kubectl apply -f ingress/grafana-ing.yaml
-      continue-on-error: true      
+      # continue-on-error: true      
 
     # Установка мониторинга Promtail
     - name: Deploy Promtail
       run: |
         helm install promtail/ promtail -n monitoring
-      continue-on-error: true      
+      # continue-on-error: true      
 
   install_app:
     runs-on: ubuntu-latest
@@ -140,6 +145,11 @@ jobs:
       uses: azure/setup-helm@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get Kubeconfig
+      run: |
+        yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
+        kubectl config view --raw > kubeconfig.yaml
 
     - name: Deploy Wekan
       run: |
