@@ -93,11 +93,24 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    # Установка YC CLI
+    - name: Install YC CLI
+      run: |
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a 
+        sudo apt-get install -y jq       
+        echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH 
+
+    # Инициализация утилиты
+    - name: Configure YC CLI
+      run: |
+        yc config set token ${{secrets.YC_CLOUD_OAUTH_TOKEN}}
+        yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+        yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
     - name: Get Kubeconfig
       run: |
         yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
         kubectl config view --raw > kubeconfig.yaml
-        
+
     # Установка ingress
     - name: Deploy Ingress NGINX
       run: |
@@ -145,7 +158,20 @@ jobs:
       uses: azure/setup-helm@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        
+    # Установка YC CLI
+    - name: Install YC CLI
+      run: |
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a 
+        sudo apt-get install -y jq       
+        echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH 
 
+    # Инициализация утилиты
+    - name: Configure YC CLI
+      run: |
+        yc config set token ${{secrets.YC_CLOUD_OAUTH_TOKEN}}
+        yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+        yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
     - name: Get Kubeconfig
       run: |
         yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
