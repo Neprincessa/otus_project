@@ -114,7 +114,7 @@ jobs:
     # Установка ingress
     - name: Deploy Ingress NGINX
       run: |
-        if ! helm ls ingress-nginx -n ingress-nginx >/dev/null 2>&1; then
+        if ! helm status ingress-nginx -n ingress-nginx >/dev/null 2>&1; then
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
 
@@ -133,7 +133,7 @@ jobs:
     # Установка мониторинга Loki stack
     - name: Deploy Loki-Stack
       run: |
-        if ! helm ls loki -n monitoring >/dev/null 2>&1; then
+        if ! helm status loki -n monitoring >/dev/null 2>&1; then
           helm install loki loki-distributed/ -f values/loki_values.yaml -n monitoring --create-namespace 
         else 
           echo "loki already installed"
@@ -143,7 +143,7 @@ jobs:
     # Установка мониторинга Grafana
     - name: Deploy Grafana
       run: |
-        if ! helm ls grafana -n monitoring >/dev/null 2>&1; then
+        if ! helm status grafana -n monitoring >/dev/null 2>&1; then
           helm install grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
           kubectl get secret --namespace logging loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
           kubectl apply -f ingress/grafana-ing.yaml
@@ -155,7 +155,7 @@ jobs:
     # Установка мониторинга Promtail
     - name: Deploy Promtail
       run: |
-        if ! helm ls promtail -n monitoring >/dev/null 2>&1; then
+        if ! helm status promtail -n monitoring >/dev/null 2>&1; then
           helm install promtail/ promtail -n monitoring
         else 
           echo "promtail already installed"
