@@ -112,7 +112,8 @@ jobs:
     - name: Deploy Loki-Stack
       run: |
         helm install loki loki-distributed/ -f values/loki_values.yaml -n monitoring --create-namespace 
-        helm install promtail/ promtail -n monitoring
         helm upgrade grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
         kubectl get secret --namespace logging loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
         kubectl apply -f ingress/grafana-ing.yaml
+        helm install promtail/ promtail -n monitoring
+      continue-on-error: true
