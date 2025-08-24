@@ -1,0 +1,88 @@
+name: Wekan App in Yandex K8S
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  YC_CLUSTER_NAME: "project-cluster"
+  YC_NETWORK_NAME: "default"
+  YC_SUBNET_NAME: "default-ru-central1-a"
+  YC_NODE_COUNT: "2"
+  YC_NODE_GROUP: "main-nodes"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+
+    # Установка YC CLI
+    - name: Install YC CLI
+      run: |
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a 
+        sudo apt-get install -y jq       
+        echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH 
+
+    # Аутентификация в Yandex Cloud
+    - name: Configure YC CLI
+      run: |
+        yc config set token ${{secrets.YC_CLOUD_OAUTH_TOKEN}}
+        yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+        yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
+
+    # Проверка Аутентификация в Yandex Cloud
+    - name: Test YC CLI
+      run: |
+        yc config get folder-id > folder_id.txt  # Сохраняем в файл
+        cat folder_id.txt  # Показываем содержимое
+
+    # Создание Kubernetes-кластера
+    - name: Create Yandex Managed Kubernetes Cluster
+      run: |
+        if ! yc managed-kubernetes cluster get --name  ${{env.YC_CLUSTER_NAME}}  >/dev/null 2>&1; then
+          yc managed-kubernetes cluster create  \
+            --name ${{env.YC_CLUSTER_NAME}}  \
+            --network-name ${{env.YC_NETWORK_NAME}} \
+            --zone ru-central1-a  \
+            --subnet-name  ${{env.YC_SUBNET_NAME}}   \
+            --public-ip  \
+            --service-account-id ${{ secrets.YC_SA_KEY_ID }}  \
+            --node-service-account-id ${{ secrets.YC_SA_KEY_ID }}
+        else
+          echo "Cluster '${{env.YC_CLUSTER_NAME}}' already exists, skipping creation"
+        fi
+
+    # Создание node-group для Kubernetes-кластера
+    - name: Create Yandex Managed Kubernetes Cluster node-group
+      run: |
+        if ! yc managed-kubernetes node-group get --name ${{env.YC_NODE_GROUP}} >/dev/null 2>&1; then
+          yc managed-kubernetes --folder-id=${{ secrets.YC_FOLDER_ID }} node-group create \
+                  --name ${{env.YC_NODE_GROUP}}  \
+                  --cluster-name  ${{env.YC_CLUSTER_NAME}} \
+                  --cores 4 \
+                  --memory 4 \
+                  --disk-type network-ssd \
+                  --fixed-size 1 \
+                  --disk-size 64 \
+                  --network-interface subnets=default-ru-central1-a,security-group-ids=enp6hb50hhtrelck4d4e,enpbn9uhvej9arsdvh3m,enplphvjtsi96ffms38r \
+                  --async
+                  else
+          echo "Node group '${{env.YC_NODE_GROUP}}' already exists, skipping creation"
+        fi
+
+    # Получение kubeconfig
+    - name: Get Kubeconfig
+      run: |
+        yc managed-kubernetes cluster get-credentials ${{ env.YC_CLUSTER_NAME }} --external
+        kubectl config view --raw > kubeconfig.yaml
+
+    # Установка Helm
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
