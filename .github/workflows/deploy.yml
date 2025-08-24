@@ -114,35 +114,52 @@ jobs:
     # Установка ingress
     - name: Deploy Ingress NGINX
       run: |
-        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-        helm repo update
-        helm install ingress-nginx ingress-nginx/ingress-nginx \
-        --namespace ingress-nginx \
-        --set controller.service.type=LoadBalancer \
-        --set controller.service.externalTrafficPolicy=Local \
-        --set controller.service.annotations."yandex\.cloud/load-balancer-type"=external \
-        --set controller.service.annotations."yandex\.cloud/subnet-id"=e9bd98gq845t7cfn2qec \
-        --set controller.service.annotations."yandex\.cloud/network-id"=enpk98l23krfjo0gnenl
+        if ! helm ls ingress-nginx -n ingress-nginx >/dev/null 2>&1; then
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+
+          helm install ingress-nginx ingress-nginx/ingress-nginx \
+          --namespace ingress-nginx \
+          --set controller.service.type=LoadBalancer \
+          --set controller.service.externalTrafficPolicy=Local \
+          --set controller.service.annotations."yandex\.cloud/load-balancer-type"=external \
+          --set controller.service.annotations."yandex\.cloud/subnet-id"=e9bd98gq845t7cfn2qec \
+          --set controller.service.annotations."yandex\.cloud/network-id"=enpk98l23krfjo0gnenl
+        else 
+          echo "ingress already installed"
+        fi
       # continue-on-error: true
 
     # Установка мониторинга Loki stack
     - name: Deploy Loki-Stack
       run: |
-        helm install loki loki-distributed/ -f values/loki_values.yaml -n monitoring --create-namespace 
+        if ! helm ls loki -n monitoring >/dev/null 2>&1; then
+          helm install loki loki-distributed/ -f values/loki_values.yaml -n monitoring --create-namespace 
+        else 
+          echo "loki already installed"
+        fi      
       # continue-on-error: true
 
     # Установка мониторинга Grafana
     - name: Deploy Grafana
       run: |
-        helm install grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
-        kubectl get secret --namespace logging loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
-        kubectl apply -f ingress/grafana-ing.yaml
+        if ! helm ls grafana -n monitoring >/dev/null 2>&1; then
+          helm install grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
+          kubectl get secret --namespace logging loki-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+          kubectl apply -f ingress/grafana-ing.yaml
+        else 
+          echo "grafana already installed"
+        fi           
       # continue-on-error: true      
 
     # Установка мониторинга Promtail
     - name: Deploy Promtail
       run: |
-        helm install promtail/ promtail -n monitoring
+        if ! helm ls promtail -n monitoring >/dev/null 2>&1; then
+          helm install promtail/ promtail -n monitoring
+        else 
+          echo "promtail already installed"
+        fi     
       # continue-on-error: true      
 
   install_app:
@@ -158,7 +175,7 @@ jobs:
       uses: azure/setup-helm@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        
+
     # Установка YC CLI
     - name: Install YC CLI
       run: |
@@ -179,4 +196,4 @@ jobs:
 
     - name: Deploy Wekan
       run: |
-        helm install wekan ./wekan -f ./wekan/values.yaml -n wekan --create-namespace      
+        helm upgrade --install wekan ./wekan -f ./wekan/values.yaml -n wekan --create-namespace      
