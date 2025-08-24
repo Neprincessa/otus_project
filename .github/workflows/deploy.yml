@@ -93,6 +93,12 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Install YC CLI
+      run: |
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a 
+        sudo apt-get install -y jq       
+        echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH 
+
     # Инициализация утилиты
     - name: Configure YC CLI
       run: |
@@ -142,13 +148,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3        
 
+    # Установка Helm
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install YC CLI
+      run: |
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a 
+        sudo apt-get install -y jq       
+        echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH 
+        
     # Инициализация утилиты
     - name: Configure YC CLI
       run: |
         yc config set token ${{secrets.YC_CLOUD_OAUTH_TOKEN}}
         yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
         yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
-        
+
     - name: Deploy Wekan
       run: |
         helm install wekan ./wekan -f ./wekan/values.yaml -n wekan --create-namespace      
