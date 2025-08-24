@@ -111,7 +111,7 @@ jobs:
     # Установка мониторинга
     - name: Deploy Loki-Stack
       run: |
-        helm install loki loki-distributed/ --set-string loki.s3.secretAccessKey="${{ secrets.LOKI_SECRET_ACCESS_KEY }}" --set-string api.key="${{ secrets.LOKI_ACCESS_KEY_ID }}"  \
+        helm install loki loki-distributed/ --set-string loki.s3.secretAccessKey=${{ secrets.LOKI_SECRET_ACCESS_KEY }} --set-string api.key=${{ secrets.LOKI_ACCESS_KEY_ID }}  \
         -f values/loki_values.yaml -n monitoring --create-namespace 
         helm install promtail/ promtail -n monitoring
         helm upgrade grafana ./grafana/ -f values/grafana_values.yaml -n monitoring
