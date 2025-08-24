@@ -2,7 +2,7 @@ name: Wekan App in Yandex K8S
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   YC_CLUSTER_NAME: "project-cluster"
