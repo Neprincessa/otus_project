@@ -671,7 +671,11 @@ datasources:
      access: proxy
      jsonData:
       timeout: 60
-      maxLines: 1000     
+      maxLines: 1000 
+   - name: Prometheus
+     type: prometheus
+     url: http://prometheus-kube-prometheus-prometheus.prometheus.svc.cluster.local:9090
+     access: proxy
 #      isDefault: true
 #    - name: CloudWatch
 #      type: cloudwatch
